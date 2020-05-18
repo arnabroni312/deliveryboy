@@ -2,16 +2,21 @@
 session_start();
 error_reporting(0);
 include('includes/dbconnection.php');
-
+$queries = array();
+parse_str($_SERVER['QUERY_STRING'], $queries);
 if(isset($_POST['login']))
   {
     $usercon=$_POST['usercont'];
     $password=$_POST['password'];
-    $query=mysqli_query($con,"select ID from tbldeli where  user_id='$usercon' && password='$password' ");
+    $query=mysqli_query($con,"select ID from tbldeli where  user_id='$usercon' and password='$password'");
     $ret=mysqli_fetch_array($query);
     if($ret>0){
       $_SESSION['fosuid']=$ret['ID'];
-     header('location:viewdetails.php');
+	  if(isset($queries["token"])){
+		header('location:save_token.php?user_id='.$ret['ID'].'&token='.$queries['token']);
+	  } else{
+		header('location:viewdetails.php');  
+	  }
     }
     else{
     $msg="Invalid Details.";
@@ -68,7 +73,7 @@ if(isset($_POST['login']))
                               <p style="font-size:16px; color:red" align="center"> <?php if($msg){
     echo $msg;
   }  ?> </p>
-                              <form action="" name="login" method="post">
+                              <form action="" name=<?php if(isset($queries['token'])){echo "login.php?token=".$queries['token'];} else{echo "login.php";}?> method="post">
                                  <div class="row">
                                     <div class="form-group col-sm-6">
                                        <label for="exampleInputEmail1">Registered UserId </label>
